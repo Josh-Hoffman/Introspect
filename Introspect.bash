@@ -24,34 +24,41 @@
 #   | |                                                                                             | |
 #   | \________________________________________Modulation_Project___________________________________/ |
 #   |_________________________________________________________________________________________________|
-# MD5: #~1~#
+# MD5: cdff60b1cd4f70c27b1d25c24e8caf2a
 
 Introspect () {
 
+Hard=$(awk 'NR==27 {print $3}' "$0" | cut -c 1-32 ) #~#
+Soft=$(awk '/'#~#'/ {gsub(/#~#/, "");print $0}' "$0" | md5sum | cut -c 1-32) #~#
+Time=$(date +'%H:%M_%m-%d') #~#
+#~#
 	Retrospect () { #~#
 	#~#
-	Timestamp=$(date +'%H:%M_%m-%d') #~#
-	Verfied=$( awk '!/'#~#'/ {print $0}' $0 | md5sum | cut -c 1-32 ) #~#
-	Checked=$( awk '!/'#~#'/ {gsub(/'#~1~#'/, "'$Verfied'"); print $0}' "$0" ) #~#
+	Verfied=$( awk '!/'#~#'/ {gsub(/'$Hard'/, "");print $0}' $0 | md5sum | cut -c 1-32 ) #~#
+	Checked=$( awk '!/'#~#'/ {gsub(/'$Soft'/, "'$Verfied'"); print $0}' "$0" ) #~#
 	#~#
 		if [[ $(awk 'NR==27 {print $3}' "$0" ) != $Verfied ]]; then #~#
-		export File="${Timestamp}_$(echo $Verfied | cut -c 1-5).bash" #~#
+		export File=${Time}_${Verfied:0:5}.bash #~#
 		echo "$Checked" > ${File} #~#
 		fi #~#
-	#~#
+	#~# 
 	} #~#
 	#~#
+	if [[ $Hard = $Soft ]]; then #~#
 	Retrospect #~#
+	else #~#
+	exit 2 #~#
+	fi #~#
 	#~#
-Hard=$(awk 'NR==27 {print $3}' "${File:=$0}" )
-Soft=$(awk '{sub(/'$Hard'/, "'\#~1~\#'"); print $0}' "${File:=$0}" | md5sum | cut -c 1-32 )
+Over=$(awk 'NR==27 {print substr($3 ,1 ,32)}' "${File:=$0}" )
+Easy=$(awk '{sub(/'$Over'/, ""); print $0}' "${File:=$0}" | md5sum | cut -c 1-32 )
 
-	if [[ $Soft = $Hard ]]; then
+	if [[ $Over = $Easy ]]; then 
 	${Introspect_return:=return} 0
 	fi
 	
 return 1
-
+ 
 }
-
+ 
 Introspect
